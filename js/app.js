@@ -55,27 +55,25 @@ function imprimir() {
     console.log(new Date());
     listaFiltrada = lista;
     catalog.innerHTML = "";
-    // Filtrando Nome
-    console.log(`filter_name?.value = ${filter_name?.value}`);
+
     if (filter_name?.value != '') {
       listaFiltrada = listaFiltrada.filter(prd => prd.name.toUpperCase().includes(filter_name.value.toUpperCase()));
     }
-    console.log(`filter_brand?.value = ${filter_brand?.value}`);
+
     if (filter_brand?.value != '') {
       listaFiltrada = listaFiltrada.filter(prd => prd.brand?.includes(filter_brand.value) ?? false);
     }
-    console.log(`filter_type?.value = ${filter_type?.value}`);
+
     if (filter_type?.value != '') {
       listaFiltrada = listaFiltrada.filter(prd => prd.product_type?.includes(filter_type.value) ?? false);
     }
 
-    // Ordenando
     listaFiltrada = listaFiltrada.sort((prd1, prd2) => {
       switch (filter_order.value) {
         case "Menores Preços":
-          return parseFloat(prd1.price??0) - parseFloat(prd2.price??0);
+          return parseFloat(prd1.price ?? 0) - parseFloat(prd2.price ?? 0);
         case "Maiores Preços":
-          return parseFloat(prd2.price??0) - parseFloat(prd1.price??0);
+          return parseFloat(prd2.price ?? 0) - parseFloat(prd1.price ?? 0);
         case "A-Z":
           return prd1.name.localeCompare(prd2.name);
         case "Z-A":
@@ -85,7 +83,6 @@ function imprimir() {
           if (parseFloat(prd1.rating ?? 0) > parseFloat(prd2.rating ?? 0)) return -1;
           if (parseFloat(prd2.rating ?? 0) > parseFloat(prd1.rating ?? 0)) return 1;
           return 0;
-        // return parseFloat(prd1.rating)??0 > parseFloat(prd2.rating)??0 ? 1 : parseFloat(prd2.rating)??0 > parseFloat(prd1.rating)??0 ? -1 : 0;
       }
     });
 
