@@ -5,6 +5,7 @@ let filter_brand = document.getElementById("filter-brand");
 let filter_type = document.getElementById("filter-type");
 let filter_order = document.getElementById("sort-type");
 let lista = undefined;
+let timeout;
 
 fetch("http://makeup-api.herokuapp.com/api/v1/products.json")
   .then((response) => response.json().then(printProducts))
@@ -13,16 +14,82 @@ fetch("http://makeup-api.herokuapp.com/api/v1/products.json")
 
 function printProducts(productsFromApi) {
   lista = productsFromApi;
+  carregarFiltros();
   imprimir();
+}
+
+function carregarFiltros() {
+  let brands = lista.map(prd => prd.brand).filter((v, i, a) => a.indexOf(v) === i).sort();
+  for (let brand of brands) {
+    if (brand && brand != '') {
+      var option = document.createElement('option');
+      option.value = brand;
+      option.innerHTML = brand;
+      filter_brand.appendChild(option);
+    }
+  }
+
+  let types = lista.map(prd => prd.product_type).filter((v, i, a) => a.indexOf(v) === i).sort();
+  for (let type of types) {
+    if (type && type != '') {
+      var option = document.createElement('option');
+      option.value = type;
+      option.innerHTML = type;
+      filter_type.appendChild(option);
+    }
+  }
+}
+filter_brand.addEventListener("change", imprimir);
+filter_type.addEventListener("change", imprimir);
+filter_order.addEventListener("change", imprimir);
+filter_name.addEventListener("input", filterNameChange);
+function filterNameChange() {
+  clearTimeout(timeout)
+  timeout = setTimeout(() => {
+    imprimir();
+  }, 500);
 }
 
 function imprimir() {
   if (lista) {
+    console.log(new Date());
     listaFiltrada = lista;
     catalog.innerHTML = "";
-    if (filter_name?.value != ''){
-      listaFiltrada = lista.filter(prd => prd.name.includes(filter_name.value));
+    // Filtrando Nome
+    console.log(`filter_name?.value = ${filter_name?.value}`);
+    if (filter_name?.value != '') {
+      listaFiltrada = listaFiltrada.filter(prd => prd.name.toUpperCase().includes(filter_name.value.toUpperCase()));
     }
+    console.log(`filter_brand?.value = ${filter_brand?.value}`);
+    if (filter_brand?.value != '') {
+      listaFiltrada = listaFiltrada.filter(prd => prd.brand?.includes(filter_brand.value) ?? false);
+    }
+    console.log(`filter_type?.value = ${filter_type?.value}`);
+    if (filter_type?.value != '') {
+      listaFiltrada = listaFiltrada.filter(prd => prd.product_type?.includes(filter_type.value) ?? false);
+    }
+
+    // Ordenando
+    listaFiltrada = listaFiltrada.sort((prd1, prd2) => {
+      switch (filter_order.value) {
+        case "Menores Preços":
+          return parseFloat(prd1.price??0) - parseFloat(prd2.price??0);
+        case "Maiores Preços":
+          return parseFloat(prd2.price??0) - parseFloat(prd1.price??0);
+        case "A-Z":
+          return prd1.name.localeCompare(prd2.name);
+        case "Z-A":
+          return prd2.name.localeCompare(prd1.name);
+        case "Melhor Avaliados":
+        default:
+          if (parseFloat(prd1.rating ?? 0) > parseFloat(prd2.rating ?? 0)) return -1;
+          if (parseFloat(prd2.rating ?? 0) > parseFloat(prd1.rating ?? 0)) return 1;
+          return 0;
+        // return parseFloat(prd1.rating)??0 > parseFloat(prd2.rating)??0 ? 1 : parseFloat(prd2.rating)??0 > parseFloat(prd1.rating)??0 ? -1 : 0;
+      }
+    });
+
+    console.log(new Date());
     for (let product of listaFiltrada) {
       catalog.appendChild(productItem(product))
     }
